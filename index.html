@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E2 / Electric Standard (ESS) — デモWebアプリ</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- TOP DEMO TOOLBAR -->
+  <header class="demo-toolbar">
+    <div class="toolbar-left">
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="メニュー">☰</button>
+      <div class="brand-chip" onclick="navigateTo(2)">
+        <div class="brand-logo-sm">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M13 2L4 14h7l-1 8 10-12h-7l0-8z" stroke="#1ce89c" stroke-width="2.1" stroke-linejoin="round" fill="rgba(28,232,156,0.22)"/>
+          </svg>
+        </div>
+        <div class="brand-name-wrap">
+          <div class="brand-name"><span style="color:#1ce89c;-webkit-text-fill-color:#1ce89c;">E2</span> / ELECTRIC STANDARD</div>
+          <div class="brand-sub">ESS 電気本位制プラットフォーム • Interactive Demo</div>
+        </div>
+      </div>
+      <span class="live-pill"><span class="pulse-dot"></span>ESS Mainnet 同期中</span>
+    </div>
+
+    <div class="toolbar-right">
+      <div class="top-balance-chip mono" onclick="navigateTo(6)" style="cursor:pointer;" title="ウォレットを開く">
+        <span class="e2-val" id="topE2Balance">4,250 E2</span>
+        <span class="divider"></span>
+        <span class="usdt-val" id="topUsdtBalance">150.00 USDT</span>
+      </div>
+      <div class="view-toggle" role="group" aria-label="表示モード切替">
+        <button id="btnViewWide" class="active" onclick="setViewMode('wide')">🖥️ ワイド</button>
+        <button id="btnViewMobile" onclick="setViewMode('mobile')">📱 スマホ</button>
+      </div>
+      <button class="btn-ghost-sm" onclick="resetDemoData()" title="デモデータを初期状態に戻す">↺ 初期化</button>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <!-- SIDEBAR NAVIGATION (ALL 9 SCREENS) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="nav-section-label">全9画面ナビゲーション</div>
+      <nav class="nav-list" id="sidebarNav">
+        <button class="nav-item" data-screen="1" onclick="navigateTo(1)">
+          <span class="nav-num">①</span>
+          <span>ログイン・ウォレット認証</span>
+        </button>
+        <button class="nav-item active" data-screen="2" onclick="navigateTo(2)">
+          <span class="nav-num">②</span>
+          <span>メインダッシュボード</span>
+          <span class="nav-badge live">LIVE</span>
+        </button>
+        <button class="nav-item" data-screen="3" onclick="navigateTo(3)">
+          <span class="nav-num">③</span>
+          <span>V2V エネルギー交換</span>
+        </button>
+        <button class="nav-item" data-screen="4" onclick="navigateTo(4)">
+          <span class="nav-num">④</span>
+          <span>QR決済・電力シェア</span>
+        </button>
+        <button class="nav-item" data-screen="5" onclick="navigateTo(5)">
+          <span class="nav-num">⑤</span>
+          <span>超電導発電ステータス</span>
+          <span class="nav-badge">98.4%</span>
+        </button>
+        <button class="nav-item" data-screen="6" onclick="navigateTo(6)">
+          <span class="nav-num">⑥</span>
+          <span>E2ウォレット・取引履歴</span>
+        </button>
+        <button class="nav-item" data-screen="7" onclick="navigateTo(7)">
+          <span class="nav-num">⑦</span>
+          <span>ESS 経済圏インジケーター</span>
+        </button>
+        <button class="nav-item" data-screen="8" onclick="navigateTo(8)">
+          <span class="nav-num">⑧</span>
+          <span>設定・プロフィール</span>
+        </button>
+        <button class="nav-item" data-screen="9" onclick="navigateTo(9)">
+          <span class="nav-num">⑨</span>
+          <span>再エネ購入・USDT交換</span>
+          <span class="nav-badge">SWAP</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-title">
+          <span>電気本位制ペッグ基準</span>
+          <span class="mono" style="color:var(--emerald-bright);">100%裏付</span>
+        </div>
+        <div class="sidebar-footer-row">
+          <span>電力換算レート</span>
+          <span class="mono" style="color:#fff;">1 kWh = 30 E2</span>
+        </div>
+        <div class="sidebar-footer-row">
+          <span>USDT 実勢換算</span>
+          <span class="mono" id="sidebarUsdtRate" style="color:var(--cyan);">150 E2 = 1.00 USDT</span>
+        </div>
+        <div class="sidebar-footer-row">
+          <span>ログイン中DID</span>
+          <span class="mono" id="sidebarDid">did:ess:0x8F4a...3C9</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN STAGE -->
+    <main class="main-stage">
+      <div class="device-frame">
+        <!-- Mobile Frame Notch (Visible only in Mobile Preview mode) -->
+        <div class="device-notch">
+          <span class="mono" id="mobileClock">21:50</span>
+          <div class="notch-pill"></div>
+          <span class="mono" style="color:var(--emerald-bright);">5G ⚡ 94%</span>
+        </div>
+
+        <div class="screens-viewport">
+
+          <!-- ============================================================ -->
+          <!-- SCREEN 1: ログイン・ウォレット認証画面 -->
+          <!-- ============================================================ -->
+          <section class="screen" id="screen-1">
+            <div class="screen-header">
+              <div>
+                <div class="screen-tag">SCREEN ① • AUTHENTICATION & WALLET LINK</div>
+                <h1 class="screen-title">ログイン・ウォレット認証</h1>
+                <p class="screen-desc">ユーザー認証およびE2ポイントウォレット・車両（EV）・発電機IDの連携を行います。</p>
+              </div>
+              <span class="badge badge-cyan" id="loginSessionBadge">認証済セッション</span>
+            </div>
+
+            <div class="login-layout">
+              <!-- Left Brand & Biometric Card -->
+              <div class="card card-hero login-hero-box">
+                <div>
+                  <div class="e2-emblem-lg">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="rgba(34,211,238,0.4)" stroke-width="1.3" stroke-dasharray="3 3"/>
+                      <path d="M13 3L5 14h6.5L10.5 21 19 10h-6.5L13 3z" stroke="#1ce89c" stroke-width="2" stroke-linejoin="round" fill="rgba(28,232,156,0.28)"/>
+                    </svg>
+                  </div>
+                  <div style="font-size:1.65rem;font-weight:900;letter-spacing:0.02em;">
+                    <span style="color:#1ce89c;">E2</span> / Electric Standard
+                  </div>
+                  <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:6px;">
+                    法定通貨に依存しない「電気本位制（ESS）」ウォレット。EV・超電導発電機・V2Hと直結し、電力価値そのものを保有・交換します。
+                  </p>
+                </div>
+
+                <div class="stack-sm">
+                  <button class="bio-btn" id="bioLoginBtn" onclick="performBiometricLogin()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path d="M7 3H5a2 2 0 0 0-2 2v2m14-4h2a2 2 0 0 1 2 2v2M7 21H5a2 2 0 0 1-2-2v-2m14 4h2a2 2 0 0 0 2-2v-2" stroke="#1ce89c" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="9" cy="10" r="1" fill="#22d3ee"/><circle cx="15" cy="10" r="1" fill="#22d3ee"/>
+                      <path d="M9 15c1.5 1.3 4.5 1.3 6 0" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span id="bioLoginText">生体認証でログイン（Face ID / Touch ID）</span>
+                  </button>
+
+                  <div style="text-align:center;font-size:0.74rem;color:var(--text-muted);">または ID / ウォレット番号で認証</div>
+
+                  <div class="input-group">
+                    <label class="input-label"><span>ウォレットID / 車両・発電機ID</span><span class="mono" style="color:var(--cyan);">ESS-DID</span></label>
+                    <input class="input-field mono" id="loginIdInput" type="text" value="ESS-EV-2026-8F4A3C9" placeholder="ESS-EV-XXXX / 0x..." />
+                  </div>
+                  <div class="input-group">
+                    <label class="input-label"><span>パスコード（デモ用自動入力済）</span></label>
+                    <input class="input-field mono" id="loginPassInput" type="password" value="••••••••••" />
+                  </div>
+                  <button class="btn btn-emerald btn-block" onclick="performIdLogin()">IDログインしてダッシュボードへ</button>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;padding-top:6px;border-top:1px solid var(--border-subtle);">
+                  <span style="color:var(--text-secondary);">初めてご利用ですか？</span>
+                  <button class="btn-ghost-sm" style="color:var(--emerald-bright);border-color:rgba(28,232,156,0.4);" onclick="openNewWalletModal()">＋ 新規E2ウォレット作成</button>
+                </div>
+              </div>
+
+              <!-- Right Linked EV & Generator Status -->
+              <div class="card stack-md">
+                <div class="card-title-row" style="margin-bottom:0;">
+                  <div>
+                    <div class="card-title">🔗 車両（EV）・発電ユニット連携ステータス</div>
+                    <div class="card-sub">クリックで接続状態（オンライン/待機）をテスト切替できます</div>
+                  </div>
+                  <span class="badge badge-emerald" id="linkedCountBadge">3/3 接続中</span>
+                </div>
+
+                <div class="stack-sm" id="loginDeviceList"></div>
+
+                <div class="ai-meter-box">
+                  <div style="font-size:0.78rem;font-weight:700;color:var(--cyan);margin-bottom:6px;">🔐 ハードウェア信頼アンカー（ESS Hardware Attestation）</div>
+                  <p style="font-size:0.78rem;color:var(--text-secondary);line-height:1.6;">
+                    車載OBD/V2Vモジュールおよび超電導発電機（SCG-MK4）の暗号署名により、物理的な電力量（kWh）とE2ウォレット残高が1:1で改ざん不能に同期されます。
+                  </p>
+                </div>
+
+                <div style="margin-top:auto;display:flex;gap:10px;flex-wrap:wrap;">
+                  <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="navigateTo(9)">⑨ 再エネマーケットへ直行</button>
+                  <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="navigateTo(5)">⑤ 発電機ステータス確認</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================ -->
+          <!-- SCREEN 2: メインダッシュボード画面 -->
+          <!-- ============================================================ -->
+          <section class="screen active" id="screen-2">
+            <div class="screen-header">
+              <div>
+                <div class="screen-tag">SCREEN ② • MAIN DASHBOARD</div>
+                <h1 class="screen-title">メインダッシュボード</h1>
+                <p class="screen-desc">保有E2ポイント、換算電力量（kWh）、AI利用可能予測とリアルタイム発電・消費波形を確認できます。</p>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-emerald btn-sm" onclick="navigateTo(9)">⚡ 再エネ購入 / USDT交換</button>
+                <button class="btn btn-secondary btn-sm" onclick="navigateTo(3)">🔁 V2V交換</button>
+              </div>
+            </div>
+
+            <div class="stack-md">
+              <!-- Hero Balance & AI Forecast -->
+              <div class="grid-asymmetric">
+                <div class="card card-hero">
+                  <div class="card-title-row">
+                    <div>
+                      <div style="font-size:0.78rem;color:var(--text-secondary);font-weight:600;">保有 E2 ポイント残高（電気本位制）</div>
+                      <div class="kpi-big-value mono" style="margin-top:6px;">
+                        <span id="dashE2Balance" style="color:#fff;">4,250</span>
+                        <span style="font-size:1.1rem;color:var(--emerald-bright);margin-left:4px;">E2</span>
+                      </div>
+                    </div>
+                    <span class="badge badge-emerald">🌿 100% 再エネ・超電導裏付</span>
+                  </div>
+
+                  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px;">
+                    <div class="kwh-pill mono">⚡ <span id="dashKwhBalance">141.67</span> kWh 相当</div>
+                    <div class="badge badge-cyan mono">USDT 残高: <span id="dashUsdtBalance">150.00</span> USDT</div>
+                    <div class="badge badge-violet mono">EV SOC: <span id="dashEvSoc">78</span>%</div>
+                  </div>
+
+                  <div class="grid-3" style="gap:10px;">
+                    <div class="telemetry-box">
+                      <div class="telemetry-label">本日の発電獲得 (Gain)</div>
+                      <div class="telemetry-val mono" style="color:var(--emerald-bright);font-size:1.08rem;">+<span id="dashTodayGain">486</span> E2</div>
+                      <div style="font-size:0.7rem;color:var(--text-muted);" class="mono">+16.20 kWh</div>
+                    </div>
+                    <div class="telemetry-box">
+                      <div class="telemetry-label">本日の消費支出 (Spend)</div>
+                      <div class="telemetry-val mono" style="color:var(--rose);font-size:1.08rem;">-<span id="dashTodaySpend">214</span> E2</div>
+                      <div style="font-size:0.7rem;color:var(--text-muted);" class="mono">-7.13 kWh</div>
+                    </div>
+                    <div class="telemetry-box">
+                      <div class="telemetry-label">本日の純収支 (Net)</div>
+                      <div class="telemetry-val mono" style="color:var(--cyan);font-size:1.08rem;">+<span id="dashTodayNet">272</span> E2</div>
+                      <div style="font-size:0.7rem;color:var(--emerald-bright);">余剰エネルギー状態</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- AI Indicator Card -->
+                <div class="card stack-sm">
+                  <div class="card-title-row" style="margin-bottom:4px;">
+                    <div class="card-title">🤖 AI 利用可能インジケーター</div>
+                    <div class="tabs" style="padding:2px;">
+                      <button class="tab-btn active" style="padding:4px 8px;font-size:0.72rem;" onclick="setAiMode('eco', this)">省エネ</button>
+                      <button class="tab-btn" style="padding:4px 8px;font-size:0.72rem;" onclick="setAiMode('std', this)">標準</button>
+                      <button class="tab-btn" style="padding:4px 8px;font-size:0.72rem;" onclick="setAiMode('pwr', this)">パワー</button>
+                    </div>
+                  </div>
+
+                  <div class="grid-2" style="gap:10px;">
+                    <div class="ai-meter-box">
+                      <div style="font-size:0.74rem;color:var(--text-secondary);">🏠 生活電力換算</div>
+                      <div class="mono" style="font-size:1.55rem;font-weight:800;color:var(--emerald-bright);margin-top:4px;">
+                        あと <span id="aiDaysVal">13.5</span> 日
+                      </div>
+                      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;" id="aiDaysSub">平均消費 10.5 kWh/日</div>
+                    </div>
+                    <div class="ai-meter-box">
+                      <div style="font-size:0.74rem;color:var(--text-secondary);">🚗 EV走行換算</div>
+                      <div class="mono" style="font-size:1.55rem;font-weight:800;color:var(--cyan);margin-top:4px;">
+                        約 <span id="aiKmVal">921</span> km
+                      </div>
+                      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;" id="aiKmSub">電費 6.5 km/kWh 予測</div>
+                    </div>
+                  </div>
+
+                  <div class="ai-meter-box" style="margin-top:auto;">
+                    <div style="display:flex;justify-content:space-between;font-size:0.76rem;margin-bottom:4px;">
+                      <span style="color:var(--cyan);font-weight:700;">AI エネルギー最適化アドバイス</span>
+                      <span class="mono" style="color:var(--emerald-bright);">最適度 96%</span>
+                    </div>
+                    <p id="aiAdviceText" style="font-size:0.78rem;color:var(--text-secondary);">
+                      明日の晴天予測により太陽光余剰が見込まれます。余剰分をV2Vで地域供給すると約 +180 E2 の獲得が期待できます。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Real-time Waveform Chart -->
+              <div class="card">
+                <div class="card-title-row">
+                  <div>
+                    <div class="card-title">📈 発電（Gain）vs 消費（Spend）リアルタイム波形</div>
+                    <div class="card-sub">超電導発電機 + V2Hスマートメーターから1秒ごとにライブ取得中</div>
+                  </div>
+                  <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:0.78rem;" class="mono">
+                    <span style="color:var(--emerald-bright);">● 発電 Gain: <strong id="liveGainKw">4.82</strong> kW</span>
+                    <span style="color:var(--rose);">● 消費 Spend: <strong id="liveSpendKw">2.15</strong> kW</span>
+                    <span style="color:var(--cyan);">● 純増 Net: <strong id="liveNetKw">+2.67</strong> kW</span>
+                  </div>
+                </div>
+                <div class="chart-canvas-wrap">
+                  <canvas id="dashWaveCanvas"></canvas>
+                </div>
+              </div>
+
+              <!-- Shortcuts -->
+              <div class="card">
+                <div class="card-title-row" style="margin-bottom:12px;">
+                  <div class="card-title">⚡ 主要機能ショートカット</div>
+                  <span class="card-sub">タップして各画面へジャンプ</span>
+                </div>
+                <div class="shortcut-grid">
+                  <button class="shortcut-card" onclick="navigateTo(3)">
+                    <div class="shortcut-icon" style="background:var(--cyan-dim);color:var(--cyan);">🔁</div>
+                    <div style="font-size:0.84rem;font-weight:700;">V2V エネルギー交換</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);">周辺EVと電力売買</div>
+                  </button>
+                  <button class="shortcut-card" onclick="navigateTo(4)">
+                    <div class="shortcut-icon" style="background:var(--violet-dim);color:#c4b5fd;">📷</div>
+                    <div style="font-size:0.84rem;font-weight:700;">QR決済・電力シェア</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);">スキャン＆マイQR</div>
+                  </button>
+                  <button class="shortcut-card" onclick="navigateTo(9)">
+                    <div class="shortcut-icon" style="background:var(--emerald-dim);color:var(--emerald-bright);">☀️</div>
+                    <div style="font-size:0.84rem;font-weight:700;">再エネ購入・USDT交換</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);">太陽光直販 & スワップ</div>
+                  </button>
+                  <button class="shortcut-card" onclick="navigateTo(5)">
+                    <div class="shortcut-icon" style="background:var(--amber-dim);color:#fbbf24;">⚛️</div>
+                    <div style="font-size:0.84rem;font-weight:700;">超電導発電ステータス</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);">77.2K / 効率98.4%</div>
+                  </button>
+                  <button class="shortcut-card" onclick="navigateTo(6)">
+                    <div class="shortcut-icon" style="background:rgba(56,189,248,0.14);color:#7dd3fc;">📜</div>
+                    <div style="font-size:0.84rem;font-weight:700;">E2取引履歴</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);">スマートコントラクト</div>
+                  </button>
+                  <button class="shortcut-card" onclick="navigateTo(7)">
+                    <div class="shortcut-icon" style="background:var(--emerald-dim);color:var(--emerald-bright);">🌐</div>
+                    <div style="font-size:0.84rem;font-weight:700;">ESS 経済圏指標</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);">流通量・需給チャート</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================ -->
+          <!-- SCREEN 3: V2V エネルギー交換画面 -->
+          <!-- ============================================================ -->
+          <section class="screen" id="screen-3">
+            <div class="screen-header">
+              <div>
+                <div class="screen-tag">SCREEN ③ • VEHICLE-TO-VEHICLE ENERGY EXCHANGE</div>
+                <h1 class="screen-title">V2V エネルギー交換</h1>
+                <p class="screen-desc">周囲のEVや給電相手とマッチングし、リアルタイム送受電とE2ポイント自動決済を行います。</p>
+              </div>
+              <div class="tabs">
+                <button class="tab-btn active" id="v2vModeSend" onclick="setV2vRole('send')">⚡ 送電する（売電）</button>
+                <button class="tab-btn" id="v2vModeRecv" onclick="setV2vRole('receive')">🔋 受電する（買電）</button>
+              </div>
+            </div>
+
+            <div class="v2v-grid">
+              <!-- Radar Matching Map -->
+              <div class="card stack-sm">
+                <div class="card-title-row" style="margin-bottom:0;">
+                  <div>
+                    <div class="card-title">📡 周辺 V2V マッチングマップ（半径 1.5 km）</div>
+                    <div class="card-sub">マップ上の車両ピンをクリックしてマッチング相手を選択</div>
+                  </div>
+                  <div style="display:flex;gap:8px;font-size:0.72rem;">
+                    <span style="color:var(--emerald-bright);">● 送電側</span>
+                    <span style="color:var(--cyan);">● 受電側</span>
+                  </div>
+                </div>
+
+                <div class="radar-map-wrap">
+                  <svg class="radar-map-svg" id="v2vRadarSvg" viewBox="0 0 520 340">
+                    <!-- Radar Rings -->
+                    <circle cx="260" cy="170" r="55" fill="none" stroke="rgba(34,211,238,0.16)" stroke-dasharray="4 4"/>
+                    <circle cx="260" cy="170" r="110" fill="none" stroke="rgba(34,211,238,0.12)" stroke-dasharray="4 4"/>
+                    <circle cx="260" cy="170" r="160" fill="none" stroke="rgba(34,211,238,0.09)"/>
+                    <line x1="260" y1="10" x2="260" y2="330" stroke="rgba(34,211,238,0.08)"/>
+                    <line x1="20" y1="170" x2="500" y2="170" stroke="rgba(34,211,238,0.08)"/>
+                    <!-- Dynamic Energy Beam Line -->
+                    <line id="v2vBeamLine" x1="260" y1="170" x2="365" y2="105" stroke="#1ce89c" stroke-width="2.5" stroke-dasharray="6 5" opacity="0.4"/>
+                    <!-- Center User EV -->
+                    <g transform="translate(260,170)">
+                      <circle r="18" fill="rgba(28,232,156,0.18)" stroke="#1ce89c" stroke-width="2"/>
+                      <circle r="6" fill="#1ce89c"/>
+                      <text y="32" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">自車 (Ariya)</text>
+                    </g>
+                    <!-- Peer Nodes rendered by JS -->
+                    <g id="v2vPeerNodes"></g>
+                  </svg>
+                </div>
+
+                <div id="v2vSelectedPeerBox" class="ai-meter-box"></div>
+              </div>
+
+              <!-- Controls & Live Power Output -->
+              <div class="card stack-md">
+                <div class="card-title-row" style="margin-bottom:0;">
+                  <div class="card-title">⚡ 送受電コントロール＆ライブ計測</div>
+                  <span class="badge badge-cyan" id="v2vStatusBadge">待機中</span>
+                </div>
+
+                <div class="input-group">
+                  <label class="input-label">
+                    <span>単価設定（1 kWh あたり E2 ポイント）</span>
+                    <span class="mono" style="color:var(--emerald-bright);font-weight:800;"><span id="v2vRateLabel">30.0</span> E2/kWh</span>
+                  </label>
+                  <input type="range" id="v2vRateSlider" min="22" max="42" step="0.5" value="30" oninput="updateV2vRate(this.value)" />
+                  <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-muted);" class="mono">
+                    <span>22.0 E2</span><span>ESS基準 30.0 E2/kWh</span><span>42.0 E2</span>
+                  </div>
+                </div>
+
+                <div class="live-telemetry-grid">
+                  <div class="telemetry-box">
+                    <div class="telemetry-label">送電出力 (kW)</div>
+                    <div class="telemetry-val mono" style="color:var(--cyan);"><span id="v2vLiveKw">0.00</span> <span style="font-size:0.8rem;">kW</span></div>
+                  </div>
+                  <div class="telemetry-box">
+                    <div class="telemetry-label">電流 / 電圧 (A / V)</div>
+                    <div class="telemetry-val mono" style="color:#fff;"><span id="v2vLiveAmp">0.0</span> <span style="font-size:0.8rem;">A</span></div>
+                    <div style="font-size:0.68rem;color:var(--text-muted);" class="mono" id="v2vLiveVolt">DC 400V 待機</div>
+                  </div>
+                  <div class="telemetry-box">
+                    <div class="telemetry-label">累積受給電力量</div>
+                    <div class="telemetry-val mono" style="color:var(--emerald-bright);"><span id="v2vTotalKwh">0.000</span> <span style="font-size:0.8rem;">kWh</span></div>
+                  </div>
+                  <div class="telemetry-box">
+                    <div class="telemetry-label">リアルタイム決済額</div>
+                    <div class="telemetry-val mono" style="color:#fbbf24;"><span id="v2vTotalE2">0.0</span> <span style="font-size:0.8rem;">E2</span></div>
+                  </div>
+                </div>
+
+                <div class="ai-meter-box" style="font-size:0.78rem;color:var(--text-secondary);">
+                  ⏱ 経過時間: <strong class="mono" style="color:#fff;" id="v2vElapsed">00:00</strong> &nbsp;|&nbsp;
+                  スマートコントラクト自動エスクロー: <strong style="color:var(--emerald-bright);">有効</strong>
+                </div>
+
+                <div style="display:flex;gap:10px;margin-top:auto;">
+                  <button class="btn btn-emerald btn-block" id="v2vToggleBtn" onclick="toggleV2vTransfer()">⚡ 送電を開始する</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================ -->
+          <!-- SCREEN 4: QR決済・ローカル電力シェア画面 -->
+          <!-- ============================================================ -->
+          <section class="screen" id="screen-4">
+            <div class="screen-header">
+              <div>
+                <div class="screen-tag">SCREEN ④ • QR PAYMENT & LOCAL POWER SHARE</div>
+                <h1 class="screen-title">QR決済・ローカル電力シェア</h1>
+                <p class="screen-desc">QRコード読み取りで、施設・車両・デバイス間での電力利用権とE2ポイントを即座に同期・決済します。</p>
+              </div>
+              <div class="tabs">
+                <button class="tab-btn active" id="qrTabScan" onclick="setQrTab('scan')">📷 QRスキャン（支払う）</button>
+                <button class="tab-btn" id="qrTabMine" onclick="setQrTab('mine')">🧾 マイQR表示（受給電）</button>
+              </div>
+            </div>
+
+            <!-- QR SCAN PANEL -->
+            <div id="qrScanPanel" class="grid-2">
+              <div class="card stack-md" style="align-items:center;">
+                <div style="width:100%;" class="card-title-row">
+                  <div class="card-title">📷 QRコードスキャナー</div>
+                  <span class="badge badge-cyan">カメラ待機中</span>
+                </div>
+
+                <div class="qr-scanner-frame">
+                  <div class="qr-corner tl"></div>
+                  <div class="qr-corner tr"></div>
+                  <div class="qr-corner bl"></div>
+                  <div class="qr-corner br"></div>
+                  <div class="qr-laser"></div>
+                  <div style="text-align:center;padding:20px;">
+                    <div style="font-size:2.2rem;margin-bottom:6px;">⚡</div>
+                    <div style="font-size:0.8rem;color:var(--cyan);font-weight:700;" id="qrScanTargetLabel">下のデモQRを選択してスキャン</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:4px;">ESS-QR v2.4 プロトコル対応</div>
+                  </div>
+                </div>
+
+                <div style="width:100%;" class="stack-sm">
+                  <div style="font-size:0.75rem;color:var(--text-secondary);font-weight:700;">デモ用：スキャン対象を選択（タップで読取）</div>
+                  <button class="device-status-item" onclick="scanPresetQr(0)">
+                    <div>
+                      <div style="font-size:0.84rem;font-weight:700;">☕ 青山ソーラーカフェ EV急速ポート #03</div>
+                      <div style="font-size:0.72rem;color:var(--text-secondary);">施設給電 • 単価 30 E2/kWh • 最大 50kW</div>
+                    </div>
+                    <span class="badge badge-cyan">スキャン</span>
+                  </button>
+                  <button class="device-status-item" onclick="scanPresetQr(1)">
+                    <div>
+                      <div style="font-size:0.84rem;font-weight:700;">🚗 隣接EV: Model Y (Owner: Sato)</div>
+                      <div style="font-size:0.72rem;color:var(--text-secondary);">ローカル電力シェア • 単価 28 E2/kWh</div>
+                    </div>
+                    <span class="badge badge-emerald">スキャン</span>
+                  </button>
+                  <button class="device-status-item" onclick="scanPresetQr(2)">
+                    <div>
+                      <div style="font-size:0.84rem;font-weight:700;">🏕️ 地域防災マイクログリッド端末 B-12</div>
+                      <div style="font-size:0.72rem;color:var(--text-secondary);">オフグリッド共有電源 • 単価 25 E2/kWh</div>
+                    </div>
+                    <span class="badge badge-amber">スキャン</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="card stack-md">
+                <div class="card-title-row" style="margin-bottom:0;">
+                  <div class="card-title">✅ 決済内容の確認</div>
+                  <span class="badge badge-emerald" id="qrVerifiedBadge">ESS署名検証済</span>
+                </div>
+
+                <div class="ai-meter-box stack-sm">
+                  <div class="detail-kv"><span class="detail-k">相手先名称</span><span class="detail-v" id="qrCounterparty">青山ソーラーカフェ EV急速ポート #03</span></div>
+                  <div class="detail-kv"><span class="detail-k">相手先アドレス</span><span class="detail-v mono" id="qrAddress" style="color:var(--cyan);">ess:fac:0x4A91...E203</span></div>
+                  <div class="detail-kv"><span class="detail-k">適用単価</span><span class="detail-v mono" id="qrUnitPrice">30.0 E2 / kWh</span></div>
+                  <div class="detail-kv"><span class="detail-k">電力由来</span><span class="detail-v" style="color:var(--emerald-bright);" id="qrOrigin">太陽光 100%（グリーン証書付）</span></div>
+                </div>
+
+                <div class="input-group">
+                  <label class="input-label">
+                    <span>利用電力量（kWh）を選択</span>
+                    <span class="mono" style="color:var(--cyan);font-weight:800;"><span id="qrKwhVal">12.0</span> kWh</span>
+                  </label>
+                  <input type="range" id="qrKwhSlider" min="1" max="50" step="0.5" value="12" oninput="updateQrSummary()" />
+                  <div class="quick-pct-row">
+                    <button class="pct-btn" onclick="setQrKwh(5)">5 kWh</button>
+                    <button class="pct-btn" onclick="setQrKwh(12)">12 kWh</button>
+                    <button class="pct-btn" onclick="setQrKwh(25)">25 kWh</button>
+                    <button class="pct-btn" onclick="setQrKwh(40)">40 kWh</button>
+                  </div>
+                </div>
+
+                <div class="card-hero" style="padding:16px;border-radius:14px;border:1px solid rgba(28,232,156,0.35);">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:0.82rem;color:var(--text-secondary);">支払い E2 ポイント合計</span>
+                    <span class="mono" style="font-size:1.6rem;font-weight:900;color:var(--emerald-bright);" id="qrTotalE2">360 E2</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.74rem;color:var(--text-secondary);margin-top:6px;">
+                    <span>決済後E2残高予測</span>
+                    <span class="mono" id="qrAfterBalance">3,890 E2</span>
+                  </div>
+                </div>
+
+                <button class="btn btn-emerald btn-block" style="margin-top:auto;" onclick="confirmQrPayment()">⚡ 決済を確定して給電を開始</button>
+              </div>
+            </div>
+
+            <!-- MY QR PANEL -->
+            <div id="qrMinePanel" class="card" style="display:none;max-width:520px;margin:0 auto;text-align:center;">
+              <div class="badge badge-emerald" style="margin-bottom:10px;">受給電専用 ESS-QR</div>
+              <h2 style="font-size:1.15rem;font-weight:800;">マイ受給電用 QRコード</h2>
+              <p style="font-size:0.8rem;color:var(--text-secondary);margin:6px 0 18px;">相手にスキャンしてもらうことで、あなたのEV・V2Hから電力をシェアしE2ポイントを受け取れます。</p>
+
+              <div class="my-qr-card" id="myQrSvgWrap"></div>
+
+              <div class="ai-meter-box" style="margin-top:18px;text-align:left;">
+                <div class="detail-kv"><span class="detail-k">ウォレットDID</span><span class="detail-v mono" style="color:var(--cyan);">did:ess:0x8F4a91B2...3C9</span></div>
+                <div class="detail-kv"><span class="detail-k">許容最大出力</span><span class="detail-v mono">6.0 kW (AC/DC V2L)</span></div>
+                <div class="detail-kv"><span class="detail-k">希望受取単価</span><span class="detail-v mono" style="color:var(--emerald-bright);">30.0 E2 / kWh</span></div>
+              </div>
+
+              <div style="display:flex;gap:10px;margin-top:16px;">
+                <button class="btn btn-secondary btn-block" onclick="copyMyWalletId()">📋 アドレスをコピー</button>
+                <button class="btn btn-emerald btn-block" onclick="simulateReceiveViaQr()">⚡ 受電決済をテスト受信 (+150 E2)</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================ -->
+          <!-- SCREEN 5: 発電ステータス（超電導発電機・源泉管理）画面 -->
+          <!-- ============================================================ -->
+          <section class="screen" id="screen-5">
+            <div class="screen-header">
+              <div>
+                <div class="screen-tag">SCREEN ⑤ • SUPERCONDUCTING GENERATOR TELEMETRY</div>
+                <h1 class="screen-title">発電ステータス（超電導発電機・源泉管理）</h1>
+                <p class="screen-desc">電気本位制の価値の裏付けとなる超電導発電ユニットの稼働状態と自動E2ポイント生成を監視します。</p>
+              </div>
+              <div class="tabs">
+                <button class="tab-btn active" onclick="setGenMode('rated', this)">定格運転</button>
+                <button class="tab-btn" onclick="setGenMode('eco', this)">エコ運転</button>
+                <button class="tab-btn" onclick="setGenMode('standby', this)">待機</button>
+              </div>
+            </div>
+
+            <div class="stack-md">
+              <div class="grid-3">
+                <!-- Unit Status -->
+                <div class="card card-hero stack-sm">
+                  <div class="card-title-row" style="margin-bottom:0;">
+                    <div class="card-title">⚛️ ユニット稼働状況</div>
+                    <span class="badge badge-emerald" id="genStatusBadge"><span class="pulse-dot"></span>オンライン</span>
+                  </div>
+                  <div class="mono" style="font-size:0.78rem;color:var(--cyan);">UNIT ID: SCG-MK4-0042</div>
+                  <div class="live-telemetry-grid" style="margin-top:6px;">
+                    <div class="telemetry-box">
+                      <div class="telemetry-label">現在出力</div>
+                      <div class="telemetry-val mono" style="color:var(--emerald-bright);"><span id="genOutputKw">14.82</span> <span style="font-size:0.78rem;">kW</span></div>
+                    </div>
+                    <div class="telemetry-box">
+                      <div class="telemetry-label">月間稼働率</div>
+                      <div class="telemetry-val mono" style="color:#fff;"><span id="genUptime">96.8</span><span style="font-size:0.78rem;">%</span></div>
+                    </div>
+                  </div>
+                  <div class="cryo-ring">
+                    <span style="font-size:0.76rem;color:var(--text-secondary);">累計発電量</span>
+                    <span class="mono" style="font-weight:800;color:var(--cyan);"><span id="genTotalKwh">18,420.6</span> kWh</span>
+                  </div>
+                </div>
+
+                <!-- Superconducting Efficiency Gauge -->
+                <div class="card stack-sm" style="text-align:center;">
+                  <div class="card-title-row" style="margin-bottom:0;">
+                    <div class="card-title">❄️ 超電導状態・出力効率</div>
+                    <span class="badge badge-cyan">臨界温度内</span>
+                  </div>
+                  <div class="gauge-wrap">
+                    <svg width="190" height="120" viewBox="0 0 190 120">
+                      <path d="M 20 105 A 75 75 0 0 1 170 105" fill="none" stroke="rgba(148,163,184,0.18)" stroke-width="14" stroke-linecap="round"/>
+                      <path id="genEffArc" d="M 20 105 A 75 75 0 0 1 170 105" fill="none" stroke="url(#effGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="236" stroke-dashoffset="6"/>
+                      <defs>
+                        <linearGradient id="effGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stop-color="#22d3ee"/>
+                          <stop offset="100%" stop-color="#1ce89c"/>
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div class="gauge-center-text">
+                      <div class="mono" style="font-size:1.55rem;font-weight:900;color:var(--emerald-bright);"><span id="genEffVal">98.4</span>%</div>
+                      <div style="font-size:0.7rem;color:var(--text-secondary);">出力変換効率</div>
+                    </div>
+                  </div>
+                  <div class="grid-2" style="gap:8px;text-align:left;">
+                    <div class="cryo-ring" style="padding:8px 10px;">
+                      <span style="font-size:0.72rem;color:var(--text-secondary);">コイル温度</span>
+                      <span class="mono" style="font-size:0.82rem;color:var(--cyan);font-weight:700;" id="genTempK">77.2 K</span>
+                    </div>
+                    <div class="cryo-ring" style="padding:8px 10px;">
+                      <span style="font-size:0.72rem;color:var(--text-secondary);">磁束安定度</span>
+                      <span class="mono" style="font-size:0.82rem;color:var(--emerald-bright);font-weight:700;">99.92%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Auto-minted E2 Points -->
+                <div class="card stack-sm">
+                  <div class="card-title-row" style="margin-bottom:0;">
+                    <div class="card-title">🪙 自動生成 E2 ポイント</div>
+                    <span class="badge badge-emerald">リアルタイム発行</span>
+                  </div>
+                  <div class="ai-meter-box" style="text-align:center;padding:18px 12px;">
+                    <div style="font-size:0.74rem;color:var(--text-secondary);">未同期の発電獲得 E2（自動ミント中）</div>
+                    <div class="mono" style="font-size:1.85rem;font-weight:900;color:var(--emerald-bright);margin:6px 0;">
+                      +<span id="genPendingE2">42.60</span> E2
+                    </div>
+                    <div class="mono" style="font-size:0.74rem;color:var(--cyan);">≈ <span id="genPendingKwh">1.420</span> kWh 裏付済</div>
+                  </div>
+                  <button class="btn btn-emerald btn-block" onclick="claimGeneratorE2()">⚡ ウォレットへ今すぐ同期（受取）</button>
+                  <div style="font-size:0.72rem;color:var(--text-muted);text-align:center;">累計自動生成: <span class="mono" style="color:#fff;" id="genLifetimeE2">552,618 E2</span></div>
+                </div>
+              </div>
+
+              <div class="grid-asymmetric">
+                <!-- Generation History -->
+                <div class="card stack-sm">
+                  <div class="card-title-row" style="margin-bottom:4px;">
+                    <div class="card-title">📊 自動生成 E2 ポイント履歴</div>
+                    <span class="card-sub">超電導ユニット直結ログ</span>
+                  </div>
+                  <div class="tx-list" id="genHistoryList"></div>
+                </div>
+
+                <!-- Maintenance Notifications -->
+                <div class="card stack-sm">
+                  <div class="card-title-row" style="margin-bottom:4px;">
+                    <div class="card-title">🛠️ メンテナンス通知・診断</div>
+                    <button class="btn btn-secondary btn-sm" onclick="runGenDiagnostics()">🔍 自己診断実行</button>
+                  </div>
+                  <div class="stack-sm" id="genMaintenanceList">
+                    <div class="ai-meter-box" style="border-color:rgba(28,232,156,0.3);">
+                      <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:700;">
+                        <span style="color:var(--emerald-bright);">✓ 液体窒素冷却循環システム</span>
+                        <span class="badge badge-emerald">正常</span>
+                      </div>
+                      <p style="font-size:0.74rem;color:var(--text-secondary);margin-top:4px;">圧力 0.14 MPa・温度 77.2K で安定推移中。次回定期補充目安：42日後。</p>
+                    </div>
+                    <div class="ai-meter-box" style="border-color:rgba(251,191,36,0.35);">
+                      <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:700;">
+                        <span style="color:#fbbf24;">⚠ インバータ吸気フィルター点検</span>
+                        <span class="badge badge-amber">14日以内</span>
+                      </div>
+                      <p style="font-size:0.74rem;color:var(--text-secondary);margin-top:4px;">稼働累計 2,400 時間に到達予定。効率維持のため簡易清掃を推奨します。</p>
+                    </div>
+                    <div class="ai-meter-box">
+                      <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:700;">
+                        <span style="color:var(--cyan);">ℹ ESS ファームウェア v4.2.1</span>
+                        <span class="badge badge-cyan">最新</span>
+                      </div>
+                      <p style="font-size:0.74rem;color:var(--text-secondary);margin-top:4px;">スマートコントラクト自動署名・高周波ノイズ抑制パッチ適用済。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================ -->
+          <!-- SCREEN 6: E2ウォレット・取引履歴画面 -->
+          <!-- ============================================================ -->
+          <section class="screen" id="screen-6">
+            <div class="screen-header">
+              <div>
+                <div class="screen-tag">SCREEN ⑥ • E2 WALLET & SMART CONTRACT LEDGER</div>
+                <h1 class="screen-title">E2ウォレット・取引履歴</h1>
+                <p class="screen-desc">E2ポイントの入出金明細、kWh換算ログ、スマートコントラクト検証記録を確認できます。</p>
+              </div>
+              <button class="btn btn-emerald btn-sm" onclick="navigateTo(9)">⇄ USDTスワップ / 購入</button>
+            </div>
+
+            <div class="stack-md">
+              <!-- Wallet Summary Bar -->
+              <div class="grid-3">
+                <div class="card card-hero">
+                  <div style="font-size:0.76rem;color:var(--text-secondary);">E2 保有残高</div>
+                  <div class="mono" style="font-size:1.75rem;font-weight:900;color:#fff;margin-top:4px;">
+                    <span id="walletE2Balance">4,250</span> <span style="font-size:0.95rem;color:var(--emerald-bright);">E2</span>
+                  </div>
+                  <div class="mono" style="font-size:0.78rem;color:var(--cyan);margin-top:4px;">≈ <span id="walletKwhBalance">141.67</span> kWh 相当</div>
+                </div>
+                <div class="card">
+                  <div style="font-size:0.76rem;color:var(--text-secondary);">連携 USDT ウォレット残高</div>
+                  <div class="mono" style="font-size:1.75rem;font-weight:900;color:var(--emerald-bright);margin-top:4px;">
+                    <span id="walletUsdtBalance">150.00</span> <span style="font-size:0.95rem;">USDT</span>
+                  </div>
+                  <div class="mono" style="font-size:0.74rem;color:var(--text-secondary);margin-top:4px;">ERC-20 / ESS Bridge 接続済</div>
+                </div>
+                <div class="card">
+                  <div style="font-size:0.76rem;color:var(--text-secondary);">スマートコントラクト記録数</div>
+                  <div class="mono" style="font-size:1.75rem;font-weight:900;color:var(--cyan);margin-top:4px;" id="walletTxCount">0 件</div>
+                  <div style="font-size:0.74rem;color:var(--emerald-bright);margin-top:4px;">✓ 全件オンチェーン検証済（ガス代 0 E2）</div>
+                </div>
+              </div>
+
+              <!-- Filter & Transaction List -->
+              <div class="card stack-sm">
+                <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;">
+                  <div class="tabs" id="walletFilterTabs">
+                    <button class="tab-btn active" onclick="setTxFilter('all', this)">すべて</button>
+                    <button class="tab-btn" onclick="setTxFilter('gain', this)">受電・獲得</button>
+                    <button class="tab-btn" onclick="setTxFilter('spend', this)">送電・支払い</button>
+                  </div>
+                  <input class="input-field" id="txSearchInput" style="max-width:260px;padding:8px 12px;font-size:0.82rem;" placeholder="相手先・TxID・種別で検索..." oninput="renderTxList()" />
+                </div>
+
+                <div style="font-size:0.74rem;color:var(--text-muted);">※ 各取引をクリックするとスマートコントラクト詳細モーダルが表示されます</div>
+                <div class="tx-list" id="walletTxList"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================ -->
+          <!-- SCREEN 7: 経済圏インジケーター（ESS経済指標）画面 -->
+          <!-- ============================================================ -->
+          <section class="screen" id="screen-7">
+            <div class="screen-header">
+              <div>
+                <div class="screen-tag">SCREEN ⑦ • ESS ECONOMIC INDICATORS</div>
+                <h1 class="screen-title">経済圏インジケーター（ESS経済指標）</h1>
+                <p class="screen-desc">法定通貨に依存しないESS経済圏のE2流通量、地域エネルギー需給、従来コスト比較を可視化します。</p>
+              </div>
+              <div class="tabs">
+                <button class="tab-btn active" onclick="setEconRange('24H', this)">24H</button>
+                <button class="tab-btn" onclick="setEconRange('7D', this)">7D</button>
+                <button class="tab-btn" onclick="setEconRange('30D', this)">30D</button>
+              </div>
+            </div>
+
+            <div class="stack-md">
+              <!-- KPI Row -->
+              <div class="grid-4">
+                <div class="card">
+                  <div style="font-size:0.74rem;color:var(--text-secondary);">E2 総流通量</div>
+                  <div class="mono" style="font-size:1.35rem;font-weight:900;color:var(--cyan);margin-top:4px;">48.62M E2</div>
+                  <div style="font-size:0.72rem;color:var(--emerald-bright);margin-top:2px;">▲ +4.2% (前月比)</div>
+                </div>
+                <div class="card">
+                  <div style="font-size:0.74rem;color:var(--text-secondary);">物理電力裏付率</div>
+                  <div class="mono" style="font-size:1.35rem;font-weight:900;color:var(--emerald-bright);margin-top:4px;">102.4%</div>
+                  <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:2px;">1.66M kWh 超過準備</div>
+                </div>
+                <div class="card">
+                  <div style="font-size:0.74rem;color:var(--text-secondary);">地域再エネ自給率</div>
+                  <div class="mono" style="font-size:1.35rem;font-weight:900;color:#fff;margin-top:4px;">84.7%</div>
+                  <div style="font-size:0.72rem;color:var(--emerald-bright);margin-top:2px;">東京ベイ・マイクログリッド</div>
+                </div>
+                <div class="card">
+                  <div style="font-size:0.74rem;color:var(--text-secondary);">ESS 電力購買力指数</div>
+                  <div class="mono" style="font-size:1.35rem;font-weight:900;color:#fbbf24;margin-top:4px;">100.0 pt</div>
+                  <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:2px;">インフレ影響 0.0%</div>
+                </div>
+              </div>
+
+              <!-- Supply/Demand & Circulation Chart -->
+              <div class="card">
+                <div class="card-title-row">
+                  <div>
+                    <div class="card-title">📊 E2ポイント流通量・地域エネルギー需給推移</div>
+                    <div class="card-sub">地域発電供給（MWh）・電力需要（MWh）・E2流通循環インデックス</div>
+                  </div>
+                  <div style="display:flex;gap:14px;font-size:0.75rem;" class="mono">
+                    <span style="color:var(--emerald-bright);">● 供給 (MWh)</span>
+                    <span style="color:var(--rose);">● 需要 (MWh)</span>
+                    <span style="color:var(--cyan);">● E2流通量</span>
+                  </div>
+                </div>
+                <div class="chart-canvas-wrap" style="height:240px;">
+                  <canvas id="econChartCanvas"></canvas>
+                </div>
+              </div>
+
+              <!-- Comparison & Announcements -->
+              <div class="grid-2">
+                <div class="card stack-md">
+                  <div class="card-title-row" style="margin-bottom:0;">
+                    <div class="card-title">⚖️ 法定通貨・従来エネルギーコスト比較</div>
+                    <span class="badge badge-emerald">約 31% コスト削減</span>
+                  </div>
+
+                  <div class="stack-sm">
+                    <div>
+                      <div style="display:flex;justify-content:space-between;font-size:0.8rem;">
+                        <span>ESS 電気本位制（直販・V2V平均）</span>
+                        <strong class="mono" style="color:var(--emerald-bright);">30.0 E2/kWh（実質 26.8円相当）</strong>
+                      </div>
+                      <div class="compare-bar-track"><div class="compare-bar-fill" style="width:62%;background:linear-gradient(90deg,#22d3ee,#1ce89c);"></div></div>
+                    </div>
+                    <div>
+                      <div style="display:flex;justify-content:space-between;font-size:0.8rem;">
+                        <span>従来の大手電力会社（燃調・再エネ賦課金込）</span>
+                        <strong class="mono" style="color:var(--rose);">38.9円 / kWh（法定通貨）</strong>
+                      </div>
+                      <div class="compare-bar-track"><div class="compare-bar-fill" style="width:90%;background:linear-gradient(90deg,#f59e0b,#fb7185);"></div></div>
+                    </div>
+                    <div>
+                      <div style="display:flex;justify-content:space-between;font-size:0.8rem;">
+                        <span>ガソリン車 100km走行コスト比較</span>
+                        <strong class="mono" style="color:var(--text-secondary);">ESS EV: 460 E2 vs ガソリン: 1,280円</strong>
+                      </div>
+                      <div class="compare-bar-track"><div class="compare-bar-fill" style="width:36%;background:var(--cyan);"></div></div>
+                    </div>
+                  </div>
+
+                  <div class="ai-meter-box" style="font-size:0.78rem;color:var(--text-secondary);">
+                    💡 <strong style="color:#fff;">電気本位制の安定性：</strong>法定通貨のインフレや為替変動が発生しても、<span class="mono" style="color:var(--emerald-bright);">30 E2 = 1 kWh</span> の物理エネルギー交換価値は常に保証されます。
+                  </div>
+                </div>
+
+                <div class="card stack-sm">
+                  <div class="card-title-row" style="margin-bottom:4px;">
+                    <div class="card-title">📣 経済圏アナウンス・ルール概要</div>
+                    <span class="badge badge-cyan">ESS Protocol v2</span>
+                  </div>
+                  <div class="ai-meter-box">
+                    <div style="font-size:0.8rem;font-weight:700;color:var(--emerald-bright);">【ルール①】発電裏付けミント原則</div>
+                    <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:3px;">新規E2ポイントは認証済みの超電導発電機・再エネ発電所の実発電量（kWh）に厳密に連動してのみ発行されます。</p>
+                  </div>
+                  <div class="ai-meter-box">
+                    <div style="font-size:0.8rem;font-weight:700;color:var(--cyan);">【お知らせ】冬季ピーク時 V2V 供給ボーナス +5%</div>
+                    <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:3px;">17:00〜20:00 の地域需要ピーク帯にEVからV2V給電を行うと、プロトコル報酬として追加ポイントが付与されます。</p>
+                  </div>
+                  <div class="ai-meter-box">
+                    <div style="font-size:0.8rem;font-weight:700;color:#fbbf24;">【ガバナンス】USDT 流動性プール拡充完了</div>
+                    <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:3px;">画面⑨の E2 ⇄ USDT 双方向スワップにおけるスリッページ上限が 0.1% 以下に最適化されました。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================ -->
+          <!-- SCREEN 8: 設定・プロフィール画面 -->
+          <!-- ============================================================ -->
+          <section class="screen" id="screen-8">
+            <div class="screen-header">
+              <div>
+                <div class="screen-tag">SCREEN ⑧ • SETTINGS & PROFILE</div>
+                <h1 class="screen-title">設定・プロフィール</h1>
+                <p class="screen-desc">V2V自動取引条件、バッテリー通知、セキュリティ、連携デバイス・車両の管理を行います。</p>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="logoutToScreen1()">🚪 ログアウト（画面①へ）</button>
+            </div>
+
+            <div class="grid-2">
+              <!-- Auto Trading & Alerts -->
+              <div class="card stack-md">
+                <div class="card-title">⚙️ 自動取引条件・通知・セキュリティ</div>
+
+                <div class="setting-row">
+                  <div>
+                    <div style="font-size:0.86rem;font-weight:700;">V2V 自動マッチング</div>
+                    <div style="font-size:0.74rem;color:var(--text-secondary);">条件に合致する周辺EVへ自動で余剰電力を供給</div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="setAutoMatch" checked onchange="saveSettings()" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <div class="input-group">
+                  <label class="input-label">
+                    <span>V2V 自動購入・単価上限設定</span>
+                    <span class="mono" style="color:var(--cyan);font-weight:800;"><span id="setPriceCapVal">32.0</span> E2/kWh</span>
+                  </label>
+                  <input type="range" id="setPriceCap" min="24" max="45" step="0.5" value="32" oninput="saveSettings()" />
+                </div>
+
+                <div class="setting-row">
+                  <div>
+                    <div style="font-size:0.86rem;font-weight:700;">バッテリー残量アラート</div>
+                    <div style="font-size:0.74rem;color:var(--text-secondary);">指定SOCを下回ると自動売電を停止しプッシュ通知</div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="setBatteryAlert" checked onchange="saveSettings()" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <div class="input-group">
+                  <label class="input-label">
+                    <span>バッテリー残量アラート閾値（SOC下限）</span>
+                    <span class="mono" style="color:var(--emerald-bright);font-weight:800;"><span id="setSocMinVal">25</span>%</span>
+                  </label>
+                  <input type="range" id="setSocMin" min="10" max="60" step="5" value="25" oninput="saveSettings()" />
+                </div>
+
+                <div class="setting-row">
+                  <div>
+                    <div style="font-size:0.86rem;font-weight:700;">生体認証による送金ロック</div>
+                    <div style="font-size:0.74rem;color:var(--text-secondary);">1,000 E2 以上のスワップ・送金時にFace IDを要求</div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="setBioLock" checked onchange="saveSettings()" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+
+                <div class="setting-row">
+                  <div>
+                    <div style="font-size:0.86rem;font-weight:700;">停電時 自動V2Hバックアップ切替</div>
+                    <div style="font-size:0.74rem;color:var(--text-secondary);">系統停電を検知したら0.2秒で自宅へ給電切替</div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="setAutoV2h" checked onchange="saveSettings()" />
+                    <span class="switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Connected Devices & Help/Terms -->
+              <div class="stack-md">
+                <div class="card stack-sm">
+                  <div class="card-title-row" style="margin-bottom:4px;">
+                    <div class="card-title">🔌 連携EV・発電機・IoTデバイス一覧</div>
+                    <button class="btn btn-secondary btn-sm" onclick="addDemoIotDevice()">＋ デバイス追加</button>
+                  </div>
+                  <div class="stack-sm" id="settingsDeviceList"></div>
+                </div>
+
+                <div class="card stack-sm">
+                  <div class="card-title">📘 ヘルプ・規約・プロトコル情報</div>
+                  <div class="grid-2" style="gap:10px;">
+                    <button class="btn btn-secondary btn-sm" onclick="openInfoModal('terms')">利用規約・電気本位制規約</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openInfoModal('privacy')">プライバシー・暗号鍵管理</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openInfoModal('faq')">よくある質問（FAQ）</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openInfoModal('whitepaper')">ESS ホワイトペーパー要約</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================================================ -->
+          <!-- SCREEN 9: 再エネ電力購入・USDT交換（エネルギーマーケット／エクスチェンジ） -->
+          <!-- ============================================================ -->
+          <section class="screen" id="screen-9">
+            <div class="screen-header">
+              <div>
+                <div class="screen-tag">SCREEN ⑨ • RENEWABLE ENERGY MARKET & USDT EXCHANGE</div>
+                <h1 class="screen-title">再エネ電力購入・USDT交換</h1>
+                <p class="screen-desc">太陽光発電所が発行する再エネE2ポイントを直接購入し、USDT（テザー）と双方向で即時交換できます。</p>
+              </div>
+              <div class="tabs">
+                <button class="tab-btn active" id="mktTabBuy" onclick="setMarketTab('buy')">☀️ 再エネ購入</button>
+                <button class="tab-btn" id="mktTabSwap" onclick="setMarketTab('swap')">⇄ USDTスワップ</button>
+                <button class="tab-btn" id="mktTabBoth" onclick="setMarketTab('both')">📊 両方表示</button>
+              </div>
+            </div>
+
+            <div class="stack-md">
+              <!-- Energy & Asset Summary Banner (Green Certificate + Smart Meter / V2H Sync) -->
+              <div class="card card-hero">
+                <div class="grid-3" style="align-items:center;">
+                  <div>
+                    <div style="font-size:0.74rem;color:var(--text-secondary);">エネルギー・資産サマリー</div>
+                    <div class="mono" style="font-size:1.35rem;font-weight:900;margin-top:4px;">
+                      <span id="mktE2Balance" style="color:#fff;">4,250</span> <span style="color:var(--emerald-bright);font-size:0.9rem;">E2</span>
+                      <span style="color:var(--text-muted);margin:0 6px;">/</span>
+                      <span id="mktUsdtBalance" style="color:var(--cyan);">150.00</span> <span style="font-size:0.85rem;color:var(--cyan);">USDT</span>
+                    </div>
+                  </div>
+                  <div class="ai-meter-box" style="padding:10px 12px;border-color:rgba(28,232,156,0.38);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                      <span class="badge badge-emerald">🌿 グリーン電力証書 認証済</span>
+                      <span class="mono" style="font-size:0.76rem;color:var(--emerald-bright);" id="mktGreenKwh">141.7 kWh</span>
+                    </div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:5px;">
+                      再エネ由来比率 <strong>100%</strong> • CO₂削減貢献 <strong class="mono" style="color:#fff;" id="mktCo2Val">63.8 kg</strong>
+                    </div>
+                  </div>
+                  <div class="ai-meter-box" style="padding:10px 12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                      <span style="font-size:0.76rem;font-weight:700;color:var(--cyan);">🏠 自宅スマートメーター / V2H</span>
+                      <span class="badge badge-cyan" id="v2hSyncStatus">同期済</span>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:0.72rem;color:var(--text-secondary);">
+                      <span>反映済利用権: <strong class="mono" style="color:#fff;" id="v2hReflectedKwh">141.7 kWh</strong></span>
+                      <button class="btn-ghost-sm" style="padding:3px 8px;font-size:0.68rem;" onclick="syncHomeV2h()">↻ 今すぐ同期</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Market + Swap Main Grid -->
+              <div class="market-grid" id="marketMainGrid">
+                <!-- LEFT: Renewable Solar Power Market (Purchase) -->
+                <div class="card stack-md" id="marketBuySection">
+                  <div class="card-title-row" style="margin-bottom:0;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
+                        <circle cx="11" cy="9" r="3.5" stroke="#22d3ee" stroke-width="1.6"/>
+                        <path d="M11 3v1.5M11 13.5V15M5 9h1.5M15.5 9H17M6.8 4.8l1 1M14.2 12.2l1 1" stroke="#22d3ee" stroke-width="1.4" stroke-linecap="round"/>
+                        <polygon points="8,28 13,18 31,18 26,28" stroke="#1ce89c" stroke-width="1.7" fill="rgba(28,232,156,0.12)"/>
+                        <line x1="11" y1="23" x2="28" y2="23" stroke="#1ce89c" stroke-width="1.2"/>
+                        <line x1="17" y1="18" x2="14" y2="28" stroke="#1ce89c" stroke-width="1.2"/>
+                        <line x1="24" y1="18" x2="21" y2="28" stroke="#1ce89c" stroke-width="1.2"/>
+                      </svg>
+                      <div>
+                        <div class="card-title">再エネ電力マーケット（太陽光発電所直販）</div>
+                        <div class="card-sub">BUY RENEWABLE E2 POINTS • 発電所を選択して購入</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Solar Plant List -->
+                  <div class="stack-sm" id="solarPlantList"></div>
+
+                  <!-- Slider & Purchase Summary (Matches User Mockup!) -->
+                  <div class="swap-box stack-sm">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                      <span style="font-size:0.78rem;color:var(--text-secondary);">選択中の発電所</span>
+                      <span style="font-size:0.8rem;font-weight:700;color:var(--emerald-bright);" id="selectedPlantName">Sunrise Solar Plant（山梨）</span>
+                    </div>
+
+                    <div class="input-group">
+                      <label class="input-label">
+                        <span>購入希望電力量（kWh）スライダー</span>
+                        <span class="mono" style="color:var(--cyan);">余剰上限: <span id="selectedPlantAvail">500</span> kWh</span>
+                      </label>
+                      <input type="range" id="buyKwhSlider" min="10" max="500" step="10" value="100" oninput="updateBuyPreview()" />
+                    </div>
+
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:12px;background:rgba(15,27,46,0.9);border:1px solid rgba(34,211,238,0.28);">
+                      <div>
+                        <div style="font-size:0.7rem;color:var(--text-secondary);">購入電力量</div>
+                        <div class="mono" style="font-size:1.3rem;font-weight:900;color:#fff;"><span id="buyKwhDisplay">100</span> kWh</div>
+                      </div>
+                      <div style="font-size:1.3rem;color:var(--cyan);">→</div>
+                      <div style="text-align:right;">
+                        <div style="font-size:0.7rem;color:var(--text-secondary);">獲得 E2 ポイント</div>
+                        <div class="mono" style="font-size:1.3rem;font-weight:900;color:var(--emerald-bright);"><span id="buyE2Display">3,000</span> E2</div>
+                      </div>
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;">
+                      <span style="color:var(--text-secondary);">決済手段</span>
+                      <select class="select-field" id="buyPayMethod" style="width:auto;padding:6px 10px;font-size:0.78rem;" onchange="updateBuyPreview()">
+                        <option value="usdt">連携 USDT ウォレット残高</option>
+                        <option value="card">スマート銀行 / カード即時決済（デモ）</option>
+                      </select>
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;font-size:0.8rem;padding-top:6px;border-top:1px solid var(--border-subtle);">
+                      <span style="color:var(--text-secondary);">お支払い合計</span>
+                      <strong class="mono" style="color:#fff;" id="buyCostDisplay">20.00 USDT</strong>
+                    </div>
+
+                    <button class="btn btn-emerald btn-block" onclick="executeRenewablePurchase()">⚡ PURCHASE E2（再エネ電力を購入確定）</button>
+                  </div>
+                </div>
+
+                <!-- RIGHT: E2 <-> USDT Bidirectional Swap -->
+                <div class="card stack-md" id="marketSwapSection">
+                  <div class="card-title-row" style="margin-bottom:0;">
+                    <div>
+                      <div class="card-title">⇄ E2 ⇄ USDT 双方向スワップ</div>
+                      <div class="card-sub">ステーブルコイン（テザー）とリアルタイム交換</div>
+                    </div>
+                    <span class="badge badge-cyan mono" id="swapLiveRateBadge">150 E2 = 1.00 USDT</span>
+                  </div>
+
+                  <!-- FROM Box -->
+                  <div class="swap-box">
+                    <div style="display:flex;justify-content:space-between;font-size:0.76rem;color:var(--text-secondary);margin-bottom:8px;">
+                      <span>交換元（FROM）</span>
+                      <span class="mono">残高: <strong id="swapFromBalance" style="color:#fff;">4,250 E2</strong></span>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                      <input class="input-field mono" id="swapFromInput" type="number" min="0" step="any" value="3000" style="font-size:1.25rem;font-weight:800;" oninput="updateSwapCalc()" />
+                      <span class="badge badge-emerald mono" id="swapFromToken" style="padding:10px 14px;font-size:0.9rem;">E2</span>
+                    </div>
+                    <div class="quick-pct-row">
+                      <button class="pct-btn" onclick="setSwapPct(0.25)">25%</button>
+                      <button class="pct-btn" onclick="setSwapPct(0.5)">50%</button>
+                      <button class="pct-btn" onclick="setSwapPct(0.75)">75%</button>
+                      <button class="pct-btn" onclick="setSwapPct(1)">MAX</button>
+                    </div>
+                  </div>
+
+                  <!-- Flip Direction Button -->
+                  <div class="swap-flip-wrap">
+                    <button class="swap-flip-btn" onclick="flipSwapDirection()" title="交換方向を反転">⇅</button>
+                  </div>
+
+                  <!-- TO Box -->
+                  <div class="swap-box">
+                    <div style="display:flex;justify-content:space-between;font-size:0.76rem;color:var(--text-secondary);margin-bottom:8px;">
+                      <span>受取予定（TO）</span>
+                      <span class="mono">残高: <strong id="swapToBalance" style="color:#fff;">150.00 USDT</strong></span>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                      <input class="input-field mono" id="swapToOutput" type="text" readonly value="20.00" style="font-size:1.25rem;font-weight:800;color:var(--emerald-bright);" />
+                      <span class="badge badge-cyan mono" id="swapToToken" style="padding:10px 14px;font-size:0.9rem;">USDT</span>
+                    </div>
+                  </div>
+
+                  <!-- Rate & Fee Details -->
+                  <div class="ai-meter-box stack-sm" style="gap:4px;">
+                    <div class="detail-kv" style="padding:5px 0;"><span class="detail-k">リアルタイム交換レート</span><span class="detail-v mono" id="swapRateDetail">3,000 E2 ⇄ 20.00 USDT</span></div>
+                    <div class="detail-kv" style="padding:5px 0;"><span class="detail-k">プロトコル手数料</span><span class="detail-v mono" style="color:var(--emerald-bright);">0.00%（ESSデモ優遇）</span></div>
+                    <div class="detail-kv" style="padding:5px 0;"><span class="detail-k">電力価値換算</span><span class="detail-v mono" id="swapKwhEquiv">100.00 kWh 相当</span></div>
+                  </div>
+
+                  <button class="btn btn-emerald btn-block" style="margin-top:auto;" onclick="executeUsdtSwap()">⇄ SWAP NOW（スワップを実行）</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Mobile Frame Bottom Navigation -->
+        <nav class="mobile-bottom-nav" id="mobileBottomNav">
+          <button class="m-nav-btn active" data-screen="2" onclick="navigateTo(2)"><span>🏠</span><span>ホーム</span></button>
+          <button class="m-nav-btn" data-screen="3" onclick="navigateTo(3)"><span>🔁</span><span>V2V</span></button>
+          <button class="m-nav-btn" data-screen="4" onclick="navigateTo(4)"><span>📷</span><span>QR</span></button>
+          <button class="m-nav-btn" data-screen="9" onclick="navigateTo(9)"><span>☀️</span><span>購入/USDT</span></button>
+          <button class="m-nav-btn" data-screen="6" onclick="navigateTo(6)"><span>📜</span><span>履歴</span></button>
+        </nav>
+      </div>
+    </main>
+  </div>
+
+  <!-- SHARED MODAL -->
+  <div class="modal-backdrop" id="appModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3 id="modalTitle" style="font-size:1.05rem;font-weight:800;">詳細</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
